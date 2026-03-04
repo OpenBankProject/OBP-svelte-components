@@ -1,5 +1,4 @@
 import { User, ShieldUser, KeyRound, IdCardLanyard, CreditCard, Database, FolderKanban } from '@lucide/svelte';
-import { env } from '$env/dynamic/public';
 
 export interface NavigationItem {
     href: string;
@@ -9,8 +8,11 @@ export interface NavigationItem {
     description?: string;
 }
 
-// Build navigation items dynamically based on environment variables
-function buildMyAccountItems(): NavigationItem[] {
+export interface NavigationConfig {
+    subscriptionsUrl?: string;
+}
+
+export function buildMyAccountItems(config: NavigationConfig = {}): NavigationItem[] {
     const items: NavigationItem[] = [
         { href: '/user', label: 'Profile', iconComponent: User },
         { href: '/user/consents', label: 'Consents', iconComponent: ShieldUser },
@@ -20,10 +22,10 @@ function buildMyAccountItems(): NavigationItem[] {
         { href: '/user/api-collections', label: 'My API Collections', iconComponent: FolderKanban, description: 'Manage your API endpoint collections.' }
     ];
 
-    // Only add Subscriptions link if PUBLIC_SUBSCRIPTIONS_URL is set
-    if (env.PUBLIC_SUBSCRIPTIONS_URL) {
+    // Only add Subscriptions link if subscriptionsUrl is set
+    if (config.subscriptionsUrl) {
         items.push({
-            href: env.PUBLIC_SUBSCRIPTIONS_URL,
+            href: config.subscriptionsUrl,
             label: 'Subscriptions',
             iconComponent: CreditCard,
             external: true
@@ -33,10 +35,8 @@ function buildMyAccountItems(): NavigationItem[] {
     return items;
 }
 
-export const myAccountItems = buildMyAccountItems();
-
-export function getActiveMenuItem(pathname: string) {
-    const found = myAccountItems.find(item => {
+export function getActiveMenuItem(menuItems: NavigationItem[], pathname: string) {
+    const found = menuItems.find(item => {
         // Skip external links for active menu detection
         if (item.external) {
             return false;
@@ -46,6 +46,6 @@ export function getActiveMenuItem(pathname: string) {
         }
         return pathname.startsWith(item.href) && item.href !== '/user';
     });
-    
-    return found || myAccountItems[0]; // fallback to first item
+
+    return found || menuItems[0]; // fallback to first item
 }

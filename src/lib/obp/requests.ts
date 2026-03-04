@@ -1,11 +1,10 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('OBPRequests');
-import { env } from '$env/dynamic/public';
 import { OBPErrorBase, OBPRequestError, OBPRateLimitError, OBPTimeoutError } from '$lib/obp/errors';
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
-class OBPRequests {
+export class OBPRequests {
 	base_url: string;
 
 	constructor(base_url: string) {
@@ -246,29 +245,6 @@ class OBPRequests {
 	}
 }
 
-let obp_requests_instance: OBPRequests | null = null;
-
-export const obp_requests = {
-	get instance(): OBPRequests {
-		if (!obp_requests_instance) {
-			obp_requests_instance = new OBPRequests(env.PUBLIC_OBP_BASE_URL);
-		}
-		return obp_requests_instance;
-	},
-
-	get: function (endpoint: string, accessToken?: string) {
-		return this.instance.get(endpoint, accessToken);
-	},
-
-	post: function (endpoint: string, data: any, accessToken?: string) {
-		return this.instance.post(endpoint, data, accessToken);
-	},
-
-	put: function (endpoint: string, data: any, accessToken?: string) {
-		return this.instance.put(endpoint, data, accessToken);
-	},
-
-	delete: function (endpoint: string, accessToken?: string) {
-		return this.instance.delete(endpoint, accessToken);
-	}
-};
+export function createOBPRequests(baseUrl: string): OBPRequests {
+	return new OBPRequests(baseUrl);
+}

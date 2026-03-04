@@ -1,15 +1,12 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('LayoutServer');
 import type { RequestEvent } from "@sveltejs/kit";
-import { obpIntegrationService } from '$lib/opey/services/OBPIntegrationService';
+import { DefaultOBPIntegrationService } from '$lib/server/obp/OBPIntegrationService';
+import { createOBPRequests } from '$lib/obp/requests';
 import type { OBPConsentInfo } from '$lib/obp/types';
-// import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
-// import { storePopup } from '@skeletonlabs/skeleton';
-// storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
-			
+
 import { env } from "$env/dynamic/private";
 import { env as publicEnv } from '$env/dynamic/public';
-import { LESS } from '$env/static/private';
 
 export interface RootLayoutData {
     userId?: string;
@@ -50,13 +47,17 @@ export async function load(event: RequestEvent) {
     }
 
 	// Get Opey consent info if we have Opey consumer ID configured
-	try {
-		const currentConsentInfo = await obpIntegrationService.getCurrentConsentInfo(session)
-		if (currentConsentInfo) {
-			data.opeyConsentInfo = currentConsentInfo;
+	if (env.OPEY_CONSUMER_ID && publicEnv.PUBLIC_OBP_BASE_URL) {
+		try {
+			const obpRequests = createOBPRequests(publicEnv.PUBLIC_OBP_BASE_URL);
+			const obpIntegrationService = new DefaultOBPIntegrationService(env.OPEY_CONSUMER_ID, obpRequests);
+			const currentConsentInfo = await obpIntegrationService.getCurrentConsentInfo(session)
+			if (currentConsentInfo) {
+				data.opeyConsentInfo = currentConsentInfo;
+			}
+		} catch (error) {
+			logger.error('Error fetching Opey consent info:', error);
 		}
-	} catch (error) {
-		logger.error('Error fetching Opey consent info:', error);
 	}
 
 	return {

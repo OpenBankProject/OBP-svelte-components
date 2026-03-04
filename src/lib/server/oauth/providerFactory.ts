@@ -1,11 +1,16 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('OAuthProviderFactory');
 import { OAuth2ClientWithConfig } from './client';
-import { env } from '$env/dynamic/private';
 
 export interface WellKnownUri {
 	provider: string;
 	url: string;
+}
+
+export interface OAuthProviderConfig {
+	clientId: string;
+	clientSecret: string;
+	callbackUrl: string;
 }
 
 // Implement this for other OAuth2 providers as needed
@@ -17,8 +22,13 @@ interface OAuth2ProviderStrategy {
 	getProviderName(): string;
 }
 
-class KeyCloakStrategy implements OAuth2ProviderStrategy {
+export class KeyCloakStrategy implements OAuth2ProviderStrategy {
 	providerName = 'keycloak';
+	private config: OAuthProviderConfig;
+
+	constructor(config: OAuthProviderConfig) {
+		this.config = config;
+	}
 
 	supports(provider: string): boolean {
 		return provider === this.providerName;
@@ -30,9 +40,9 @@ class KeyCloakStrategy implements OAuth2ProviderStrategy {
 
 	async initialize(config: WellKnownUri): Promise<OAuth2ClientWithConfig> {
 		const client = new OAuth2ClientWithConfig(
-			env.KEYCLOAK_OAUTH_CLIENT_ID,
-			env.KEYCLOAK_OAUTH_CLIENT_SECRET,
-			env.APP_CALLBACK_URL,
+			this.config.clientId,
+			this.config.clientSecret,
+			this.config.callbackUrl,
 			'keycloak'
 		);
 
@@ -42,8 +52,13 @@ class KeyCloakStrategy implements OAuth2ProviderStrategy {
 	}
 }
 
-class OBPOIDCStrategy implements OAuth2ProviderStrategy {
+export class OBPOIDCStrategy implements OAuth2ProviderStrategy {
 	providerName = 'obp-oidc';
+	private config: OAuthProviderConfig;
+
+	constructor(config: OAuthProviderConfig) {
+		this.config = config;
+	}
 
 	supports(provider: string): boolean {
 		return provider === this.providerName;
@@ -55,16 +70,16 @@ class OBPOIDCStrategy implements OAuth2ProviderStrategy {
 
 	async initialize(config: WellKnownUri): Promise<OAuth2ClientWithConfig> {
 		logger.debug(`Initializing OAuth client with:`, {
-			clientId: env.OBP_OAUTH_CLIENT_ID ? '[SET]' : '[MISSING]',
-			clientSecret: env.OBP_OAUTH_CLIENT_SECRET ? '[SET]' : '[MISSING]',
-			callbackUrl: env.APP_CALLBACK_URL ? env.APP_CALLBACK_URL : '[MISSING]',
+			clientId: this.config.clientId ? '[SET]' : '[MISSING]',
+			clientSecret: this.config.clientSecret ? '[SET]' : '[MISSING]',
+			callbackUrl: this.config.callbackUrl ? this.config.callbackUrl : '[MISSING]',
 			configUrl: config.url
 		});
 
 		const client = new OAuth2ClientWithConfig(
-			env.OBP_OAUTH_CLIENT_ID,
-			env.OBP_OAUTH_CLIENT_SECRET,
-			env.APP_CALLBACK_URL,
+			this.config.clientId,
+			this.config.clientSecret,
+			this.config.callbackUrl,
 			'obp-oidc'
 		);
 
@@ -78,11 +93,10 @@ export class OAuth2ProviderFactory {
 	private strategies: OAuth2ProviderStrategy[] = [];
 	private initializedClients = new Map<string, OAuth2ClientWithConfig>();
 
-	constructor() {
-		// Register any available strategies
-		this.registerStrategy(new KeyCloakStrategy());
-		this.registerStrategy(new OBPOIDCStrategy());
-		// Add more as needed i.e. this.registerStrategy(new GoogleStrategy());
+	constructor(strategies?: OAuth2ProviderStrategy[]) {
+		if (strategies) {
+			strategies.forEach(s => this.registerStrategy(s));
+		}
 	}
 
 	registerStrategy(strategy: OAuth2ProviderStrategy): void {
@@ -146,5 +160,3 @@ export class OAuth2ProviderFactory {
 		return providers.length > 0 ? providers[0] : null;
 	}
 }
-
-export const oauth2ProviderFactory = new OAuth2ProviderFactory();

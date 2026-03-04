@@ -1,6 +1,5 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('ChatController');
-import { v4 as uuidv4 } from 'uuid';
 import type { ChatService, StreamEvent } from '../services/ChatService';
 import type { ToolMessage, UserMessage } from '../types';
 import { ChatState } from '../state/ChatState';
@@ -109,7 +108,7 @@ export class ChatController {
 							// System error - add new error message only if it's not a tool error
 							// Tool errors are already displayed via the tool message component
 							state.addMessage({
-								id: uuidv4(),
+								id: crypto.randomUUID(),
 								role: 'error',
 								message: '',
 								timestamp: new Date(),
@@ -155,7 +154,7 @@ export class ChatController {
 			}
 
 			state.addMessage({
-				id: uuidv4(),
+				id: crypto.randomUUID(),
 				role: 'error',
 				message: '',
 				timestamp: new Date(),
@@ -167,7 +166,7 @@ export class ChatController {
 		// service.onToolMessage(msg => state.addMessage(msg));
 		// // service.onError(err =>
 		// //     state.addMessage({
-		// //         id: uuidv4(),
+		// //         id: crypto.randomUUID(),
 		// //         role: 'assistant',
 		// //         message: '',
 		// //         timestamp: new Date(),
@@ -179,7 +178,7 @@ export class ChatController {
 
 	send(text: string): Promise<void> {
 		// Generate correlation ID for tracking
-		const correlationId = uuidv4();
+		const correlationId = crypto.randomUUID();
 		
 		const msg: UserMessage = {
 			id: correlationId, // Use correlation ID as temporary ID
@@ -192,7 +191,7 @@ export class ChatController {
 		this.state.addMessage(msg);
 
 		// Add a loading message to show user that assistant is thinking
-		const loadingMessageId = uuidv4();
+		const loadingMessageId = crypto.randomUUID();
 		this.state.addMessage({
 			id: loadingMessageId,
 			role: 'assistant',
@@ -362,7 +361,7 @@ export class ChatController {
 		this.state.removeMessagesAfter(messageId);
 
 		// Add a loading message to show user that assistant is thinking
-		const loadingMessageId = uuidv4();
+		const loadingMessageId = crypto.randomUUID();
 		this.state.addMessage({
 			id: loadingMessageId,
 			role: 'assistant',

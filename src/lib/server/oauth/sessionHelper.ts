@@ -1,6 +1,6 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('OAuthSessionHelper');
-import { oauth2ProviderFactory } from './providerFactory';
+import type { OAuth2ProviderFactory } from './providerFactory';
 import type { OAuth2ClientWithConfig } from './client';
 import type { Session } from 'svelte-kit-sessions';
 
@@ -12,18 +12,20 @@ export interface SessionOAuthData {
 }
 
 export class SessionOAuthHelper {
+	constructor(private factory: OAuth2ProviderFactory) {}
+
 	/**
 	 * Get the OAuth client and tokens from session
 	 * @param session - The user session
 	 * @returns SessionOAuthData if valid, null if invalid/missing
 	 */
-	static getSessionOAuth(session: Session): SessionOAuthData | null {
+	getSessionOAuth(session: Session): SessionOAuthData | null {
 		const oauthData = session.data.oauth;
 		if (!oauthData?.provider || !oauthData?.access_token) {
 			return null;
 		}
 
-		const client = oauth2ProviderFactory.getClient(oauthData.provider);
+		const client = this.factory.getClient(oauthData.provider);
 		if (!client) {
 			logger.error(`OAuth client for provider "${oauthData.provider}" not found.`);
 			return null;
@@ -36,7 +38,7 @@ export class SessionOAuthHelper {
 		};
 	}
 
-	static async updateTokensInSession(
+	async updateTokensInSession(
 		session: Session,
 		accessToken: string,
 		refreshToken?: string
@@ -58,7 +60,7 @@ export class SessionOAuthHelper {
 		await session.save();
 	}
 
-	static async refreshAccessToken(session: Session): Promise<void> {
+	async refreshAccessToken(session: Session): Promise<void> {
 		logger.debug('Attempting to refresh access token in session...');
 
 		const sessionOAuth = this.getSessionOAuth(session);

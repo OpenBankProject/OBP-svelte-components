@@ -1,6 +1,5 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('ChatState');
-import { v4 as uuidv4 } from 'uuid';
 import type { BaseMessage, ToolMessage } from '../types';
 
 export interface ChatStateSnapshot {
@@ -15,7 +14,7 @@ export class ChatState {
 	private sessionStartTime: Date = new Date();
 
 	constructor(threadId?: string) {
-		this.threadId = threadId || uuidv4(); // Generate a new thread ID if not provided
+		this.threadId = threadId || crypto.randomUUID(); // Generate a new thread ID if not provided
 		this.sessionStartTime = new Date();
 	}
 
@@ -25,7 +24,7 @@ export class ChatState {
 	}
 
 	/** resets to a new thread (e.g. "New Chat" button) */
-	setThreadId(newId: string = uuidv4()): void {
+	setThreadId(newId: string = crypto.randomUUID()): void {
 		this.threadId = newId;
 		this.messages = [];
 		this.sessionStartTime = new Date();

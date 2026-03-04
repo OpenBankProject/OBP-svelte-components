@@ -1,6 +1,6 @@
 import { createLogger } from '$lib/utils/logger';
-import { redisService } from '$lib/redis/services/RedisService';
-import { obp_requests } from '$lib/obp/requests';
+import type { RedisService } from '$lib/server/redis/RedisService';
+import type { OBPRequests } from '$lib/obp/requests';
 
 const logger = createLogger('OperationIdsCache');
 
@@ -12,7 +12,12 @@ export interface OperationIdEntry {
 	summary: string;
 }
 
-export async function getOperationIds(apiVersion: string, token?: string): Promise<OperationIdEntry[]> {
+export async function getOperationIds(
+	redisService: RedisService,
+	obpRequests: OBPRequests,
+	apiVersion: string,
+	token?: string
+): Promise<OperationIdEntry[]> {
 	const redis = redisService.getClient();
 	const cacheKey = `${CACHE_KEY}:${apiVersion}`;
 
@@ -32,7 +37,7 @@ export async function getOperationIds(apiVersion: string, token?: string): Promi
 	let operations: OperationIdEntry[] = [];
 
 	try {
-		const docsResponse = await obp_requests.get(
+		const docsResponse = await obpRequests.get(
 			`/obp/${apiVersion}/resource-docs/${apiVersion}/obp`,
 			token
 		);

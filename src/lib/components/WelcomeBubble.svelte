@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { X } from '@lucide/svelte';
-	import { env } from '$env/dynamic/public';
+
+	interface Props {
+		welcomeMessage?: string;
+	}
+
+	let { welcomeMessage = '' }: Props = $props();
 
 	let showBubble = $state(false);
 	let isClosing = $state(false);
 
 	const COOKIE_NAME = 'obp_portal_welcomed';
 	const COOKIE_EXPIRY_DAYS = 365;
-
-	// Get welcome message from environment variable
-	const welcomeMessage = env.PUBLIC_WELCOME_MESSAGE || '';
 
 	onMount(() => {
 		// Don't show bubble if welcome message is not set or empty

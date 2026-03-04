@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/state';
-	import { myAccountItems } from '$lib/config/navigation';
+	import { buildMyAccountItems } from '$lib/config/navigation';
 	import Toast from '$lib/components/Toast.svelte';
 	import WelcomeBubble from '$lib/components/WelcomeBubble.svelte';
 	import NavigationSidebar from '$lib/components/NavigationSidebar.svelte';
@@ -21,6 +21,11 @@
 
 	import { env } from '$env/dynamic/public';
 	let { data, children } = $props();
+
+	// Build my account items using factory function
+	const myAccountItems = buildMyAccountItems({
+		subscriptionsUrl: env.PUBLIC_SUBSCRIPTIONS_URL
+	});
 
 	// Undocumented feature flag - accepts string values (env vars are always strings in SvelteKit)
 	let hideFooterExtras = $state(
@@ -167,4 +172,4 @@
 <Toast />
 
 <!-- Welcome Bubble Component (appears once on first visit) -->
-<WelcomeBubble />
+<WelcomeBubble welcomeMessage={env.PUBLIC_WELCOME_MESSAGE || ''} />

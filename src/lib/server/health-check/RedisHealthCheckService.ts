@@ -1,14 +1,16 @@
 import { createLogger } from '$lib/utils/logger';
-import { redisService } from '$lib/redis/services/RedisService';
-import { HealthCheckState } from '../state/HealthCheckState';
-import { type HealthCheckOptions, HealthCheckService } from './HealthCheckService';
+import type { RedisService } from '$lib/server/redis/RedisService';
+import { type HealthCheckOptions, HealthCheckService } from '$lib/health-check/services/HealthCheckService';
 
 const logger = createLogger('RedisHealthCheckService');
 
 export class RedisHealthCheckService extends HealthCheckService {
-    constructor() {
+    private redisService: RedisService;
+
+    constructor(redisService: RedisService) {
         // We wont use the url, but HealthCheckService requires them
         super({ url: '', serviceName: 'Redis' } as HealthCheckOptions);
+        this.redisService = redisService;
         this.state.setSnapshot({
             service: 'Redis',
             status: 'unknown',
@@ -22,7 +24,7 @@ export class RedisHealthCheckService extends HealthCheckService {
         const startTime = performance.now();
 
         try {
-            const redisClient = redisService.getClient();
+            const redisClient = this.redisService.getClient();
             const pingResponse = await redisClient.ping();
 
             const responseTimeMs = performance.now() - startTime;

@@ -1,7 +1,7 @@
 import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('OAuth2Client');
 import { OAuth2Client } from 'arctic';
-import type { OpenIdConnectConfiguration, OAuth2AccessTokenPayload } from '$lib/oauth/types';
+import type { OpenIdConnectConfiguration, OAuth2AccessTokenPayload } from './types';
 import { jwtDecode } from 'jwt-decode';
 
 export class OAuth2ClientWithConfig extends OAuth2Client {

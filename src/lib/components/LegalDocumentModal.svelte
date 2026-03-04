@@ -4,6 +4,7 @@
 	import { renderMarkdown } from '$lib/markdown/helper-funcs';
 	import { getLegalMarkdownFromWebUIProps } from '$lib/utils/loadLegalDocumentFromApi';
 	import { createLogger } from '$lib/utils/logger';
+	import type { OBPRequests } from '$lib/obp/requests';
 	import { Dialog } from 'bits-ui';
 	const logger = createLogger('LegalDocumentModal');
 
@@ -12,11 +13,12 @@
 		documentName: string;
 		triggerText: string;
 		onAccept: () => void;
+		obpRequests: OBPRequests;
 		accepted?: boolean;
 		children?: Snippet;
 	}
 
-	let { title, documentName, triggerText, onAccept, accepted = false }: Props = $props();
+	let { title, documentName, triggerText, onAccept, obpRequests, accepted = false }: Props = $props();
 
 	let open = $state(false);
 	let content = $state('');
@@ -26,7 +28,7 @@
 
 	onMount(async () => {
 		try {
-			const rawMarkdown = await getLegalMarkdownFromWebUIProps(documentName);
+			const rawMarkdown = await getLegalMarkdownFromWebUIProps(obpRequests, documentName);
 			content = renderMarkdown(rawMarkdown);
 			logger.info(`Loaded remote content for: ${documentName}`);
 		} catch (error) {

@@ -6,7 +6,6 @@
 
 	const logger = createLogger('OpeyChat');
 
-	import { env } from '$env/dynamic/public';
 	import { CookieAuthStrategy } from '$lib/opey/services/AuthStrategy';
 	import { ChatState, type ChatStateSnapshot } from '$lib/opey/state/ChatState';
 	import { RestChatService } from '$lib/opey/services/RestChatService';
@@ -50,7 +49,7 @@
 	}
 	// Default chat options
 	const defaultChatOptions: OpeyChatOptions = {
-		baseUrl: env.PUBLIC_OPEY_BASE_URL || 'http://localhost:5000',
+		baseUrl: 'http://localhost:5000',
 		displayHeader: true,
 		currentlyActiveUserName: 'Guest',
 		displayConnectionPips: true,

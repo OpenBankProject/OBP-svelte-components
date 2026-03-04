@@ -1,7 +1,6 @@
 import { createLogger } from '$lib/utils/logger';
-import { obp_requests } from '$lib/obp/requests';
-import { oauth2ProviderFactory, type WellKnownUri } from '$lib/oauth/providerFactory';
-import { PUBLIC_OBP_BASE_URL } from '$env/static/public';
+import type { OBPRequests } from '$lib/obp/requests';
+import { type OAuth2ProviderFactory, type WellKnownUri } from './providerFactory';
 
 const logger = createLogger('OAuthProviderManager');
 
@@ -18,7 +17,7 @@ interface OAuthProviderStatus {
 	providers: ProviderStatus[];
 }
 
-class OAuth2ProviderManager {
+export class OAuth2ProviderManager {
 	private status: OAuthProviderStatus = {
 		ready: false,
 		providers: []
@@ -29,9 +28,12 @@ class OAuth2ProviderManager {
 	private refreshIntervalMs: number = 60000; // Refresh provider status every 60 seconds
 	private definedProviders: string[] = [];
 
-	constructor() {
+	constructor(
+		private factory: OAuth2ProviderFactory,
+		private obpRequests: OBPRequests
+	) {
 		// Initialize with all known/configured providers from the factory
-		this.definedProviders = oauth2ProviderFactory.getSupportedProviders();
+		this.definedProviders = factory.getSupportedProviders();
 		this.initializeProviderStatuses();
 	}
 
@@ -51,7 +53,7 @@ class OAuth2ProviderManager {
 	 */
 	async fetchWellKnownUris(): Promise<WellKnownUri[]> {
 		try {
-			const response = await obp_requests.get('/obp/v5.1.0/well-known');
+			const response = await this.obpRequests.get('/obp/v5.1.0/well-known');
 			return response.well_known_uris;
 		} catch (error) {
 			logger.error('Failed to fetch well-known URIs:', error);
@@ -92,7 +94,7 @@ class OAuth2ProviderManager {
 			);
 
 			try {
-				const oauth2Client = await oauth2ProviderFactory.initializeProvider(providerUri);
+				const oauth2Client = await this.factory.initializeProvider(providerUri);
 				if (oauth2Client) {
 					initializedProviders.push(providerUri);
 					if (existingProvider) {
@@ -335,5 +337,3 @@ class OAuth2ProviderManager {
 		}
 	}
 }
-
-export const oauth2ProviderManager = new OAuth2ProviderManager();

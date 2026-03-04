@@ -2,9 +2,8 @@ import { createLogger } from '$lib/utils/logger';
 const logger = createLogger('OBPIntegrationService');
 import { extractUsernameFromJWT } from '$lib/utils/jwt';
 import type { Session } from 'svelte-kit-sessions';
-import { obp_requests } from '$lib/obp/requests';
+import type { OBPRequests } from '$lib/obp/requests';
 import type { OBPConsent, OBPConsentInfo } from '$lib/obp/types';
-import { env } from '$env/dynamic/private';
 
 export interface OBPIntegrationService {
   getOrCreateOpeyConsent(session: Session): Promise<OBPConsent>;
@@ -12,7 +11,10 @@ export interface OBPIntegrationService {
 }
 
 export class DefaultOBPIntegrationService implements OBPIntegrationService {
-  constructor(private opeyConsumerId: string) {}
+  constructor(
+    private opeyConsumerId: string,
+    private obpRequests: OBPRequests
+  ) {}
 
   async getOrCreateOpeyConsent(session: Session): Promise<OBPConsent> {
     if (!session.data.oauth?.access_token) {
@@ -63,7 +65,7 @@ export class DefaultOBPIntegrationService implements OBPIntegrationService {
     }
 
     try {
-      const response = await obp_requests.get('/obp/v5.1.0/my/consents', session.data.oauth.access_token);
+      const response = await this.obpRequests.get('/obp/v5.1.0/my/consents', session.data.oauth.access_token);
       const consents = response.consents || [];
 
 			logger.debug(`checkExistingOpeyConsent: Found ${consents.length} total consents`);
@@ -80,7 +82,7 @@ export class DefaultOBPIntegrationService implements OBPIntegrationService {
 					!this.isConsentExpired(consent)
 				) {
 					logger.debug(`checkExistingOpeyConsent: Found matching consent ${consent.consent_id}`);
-					
+
 					const userIdentifier = extractUsernameFromJWT(consent.jwt);
 					logger.info(
 						`checkExistingOpeyConsent says: Retrieved existing consent JWT - User: ${userIdentifier}`
@@ -116,7 +118,7 @@ export class DefaultOBPIntegrationService implements OBPIntegrationService {
 			time_to_live: 3600
 		};
 
-		const consent = await obp_requests.post('/obp/v5.1.0/my/consents/IMPLICIT', body, accessToken);
+		const consent = await this.obpRequests.post('/obp/v5.1.0/my/consents/IMPLICIT', body, accessToken);
 		const userIdentifier = extractUsernameFromJWT(consent.jwt);
 		logger.info(
 			`createImplicitConsent says: Created implicit consent - Primary user: ${userIdentifier}`
@@ -131,5 +133,3 @@ export class DefaultOBPIntegrationService implements OBPIntegrationService {
 		return exp < now;
 	}
 }
-
-export const obpIntegrationService = new DefaultOBPIntegrationService(env.OPEY_CONSUMER_ID);

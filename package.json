@@ -1,12 +1,12 @@
 {
 	"name": "obp-svelte-components",
 	"version": "0.0.1",
-  "description": "A reusable component library for the Open Bank Project",
+	"description": "A reusable component library for the Open Bank Project",
 	"author": {
-    "name": "Open Bank Project",
-    "url": "https://www.openbankproject.com/"
-  },
-  "scripts": {
+		"name": "Open Bank Project",
+		"url": "https://www.openbankproject.com/"
+	},
+	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
 		"preview": "vite preview",
@@ -34,18 +34,102 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"svelte": "./dist/index.js"
+		},
+		"./components": {
+			"types": "./dist/components/index.d.ts",
+			"svelte": "./dist/components/index.js"
+		},
+		"./opey": {
+			"types": "./dist/opey/index.d.ts",
+			"svelte": "./dist/opey/index.js"
+		},
+		"./obp": {
+			"types": "./dist/obp/index.d.ts",
+			"svelte": "./dist/obp/index.js"
+		},
+		"./utils": {
+			"types": "./dist/utils/index.d.ts",
+			"svelte": "./dist/utils/index.js"
+		},
+		"./stores": {
+			"types": "./dist/stores/index.d.ts",
+			"svelte": "./dist/stores/index.js"
+		},
+		"./health-check": {
+			"types": "./dist/health-check/index.d.ts",
+			"svelte": "./dist/health-check/index.js"
+		},
+		"./markdown": {
+			"types": "./dist/markdown/index.d.ts",
+			"svelte": "./dist/markdown/index.js"
+		},
+		"./config": {
+			"types": "./dist/config/index.d.ts",
+			"svelte": "./dist/config/index.js"
+		},
+		"./server": {
+			"types": "./dist/server/index.d.ts",
+			"default": "./dist/server/index.js"
+		},
+		"./server/oauth": {
+			"types": "./dist/server/oauth/index.d.ts",
+			"default": "./dist/server/oauth/index.js"
+		},
+		"./server/redis": {
+			"types": "./dist/server/redis/index.d.ts",
+			"default": "./dist/server/redis/index.js"
+		},
+		"./server/health-check": {
+			"types": "./dist/server/health-check/index.d.ts",
+			"default": "./dist/server/health-check/index.js"
+		},
+		"./server/obp": {
+			"types": "./dist/server/obp/index.d.ts",
+			"default": "./dist/server/obp/index.js"
 		}
 	},
 	"peerDependencies": {
+		"@lucide/svelte": "^0.513.0",
+		"@skeletonlabs/skeleton": "^4.0.0",
+		"@skeletonlabs/skeleton-svelte": "^4.0.0",
+		"bits-ui": "^2.8.10",
 		"svelte": "^5.0.0"
 	},
+	"peerDependenciesMeta": {
+		"@skeletonlabs/skeleton": {
+			"optional": false
+		},
+		"@skeletonlabs/skeleton-svelte": {
+			"optional": false
+		},
+		"bits-ui": {
+			"optional": false
+		},
+		"@lucide/svelte": {
+			"optional": false
+		},
+		"arctic": {
+			"optional": true
+		},
+		"ioredis": {
+			"optional": true
+		},
+		"svelte-kit-sessions": {
+			"optional": true
+		},
+		"svelte-kit-connect-redis": {
+			"optional": true
+		}
+	},
 	"devDependencies": {
+		"@lucide/svelte": "^0.513.0",
 		"@playwright/test": "^1.49.1",
 		"@skeletonlabs/skeleton": "^4.0.0",
 		"@skeletonlabs/skeleton-svelte": "^4.0.0",
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@sveltejs/kit": "^2.16.0",
+		"@sveltejs/package": "^2.5.7",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.15",
@@ -54,35 +138,32 @@
 		"@testing-library/svelte": "^5.2.4",
 		"@types/markdown-it": "^14.1.2",
 		"@types/prismjs": "^1.26.5",
+		"arctic": "^3.7.0",
+		"bits-ui": "^2.8.10",
 		"dotenv": "^17.2.1",
+		"ioredis": "^5.6.1",
 		"jsdom": "^26.0.0",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
+		"publint": "^0.3.17",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
+		"svelte-kit-connect-redis": "^0.1.0",
+		"svelte-kit-sessions": "^0.4.0",
 		"tailwindcss": "^4.0.0",
 		"typescript": "^5.0.0",
-		"uuid": "^11.1.0",
 		"vite": "^6.2.6",
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
-		"@langchain/core": "^0.3.57",
-		"@lucide/svelte": "^0.513.0",
-		"arctic": "^3.7.0",
-		"bits-ui": "^2.8.10",
-		"ioredis": "^5.6.1",
 		"jwt-decode": "^4.0.0",
-		"langchain": "^0.3.27",
 		"markdown-it": "^14.1.0",
-		"prismjs": "^1.30.0",
-		"svelte-kit-connect-redis": "^0.1.0",
-		"svelte-kit-sessions": "^0.4.0"
+		"prismjs": "^1.30.0"
 	},
 	"keywords": [
 		"svelte",
-    "components",
-    "openbankproject"
+		"components",
+		"openbankproject"
 	]
 }

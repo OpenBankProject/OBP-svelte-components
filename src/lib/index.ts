@@ -1,7 +1,36 @@
-import OpeyChat from "./components/OpeyChat.svelte";
-import PageHeader from "./components/PageHeader.svelte";
-import NavigationSidebar from "./components/NavigationSidebar.svelte";
+// Components
+export {
+	OpeyChat,
+	ChatMessage,
+	ConsentCard,
+	LegalDocumentModal,
+	LightSwitch,
+	Toast,
+	ToolApprovalCard,
+	ToolMessage,
+	ToolError,
+	ObpApiResponse,
+	DefaultToolResponse
+} from './components/index.js';
 
-export { OpeyChat };
-export { PageHeader };
-export { NavigationSidebar };
+// OBP API
+export { OBPRequests, createOBPRequests } from './obp/index.js';
+export { OBPErrorBase, OBPRequestError, OBPRateLimitError, OBPTimeoutError } from './obp/index.js';
+
+// Opey
+export { ChatController, SessionController, ChatState, SessionState, RestChatService, ConsentSessionService, CookieAuthStrategy } from './opey/index.js';
+
+// Utils
+export { createLogger, toaster, toast, getLegalMarkdownFromWebUIProps, extractUsernameFromJWT } from './utils/index.js';
+
+// Stores
+export { currentBank } from './stores/index.js';
+
+// Health Check
+export { HealthCheckRegistry, healthCheckRegistry, HealthCheckService, HealthCheckState } from './health-check/index.js';
+
+// Markdown
+export { renderMarkdown } from './markdown/index.js';
+
+// Config
+export { buildMyAccountItems, getActiveMenuItem } from './config/index.js';
