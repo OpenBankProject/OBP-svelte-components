@@ -1,4 +1,5 @@
 export { default as OpeyChat } from './OpeyChat.svelte';
+export type { OpeyChatOptions, SuggestedQuestion } from './OpeyChat.svelte';
 export { default as ChatMessage } from './ChatMessage.svelte';
 export { default as ConsentCard } from './ConsentCard.svelte';
 export { default as LegalDocumentModal } from './LegalDocumentModal.svelte';
