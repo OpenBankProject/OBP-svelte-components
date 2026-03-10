@@ -73,15 +73,17 @@ export class RestChatService implements ChatService {
 		consentJwt: string | null,
 		threadId: string
 	): Promise<void> {
-		logger.info(`Sending consent response for toolCallId=${toolCallId}, granted=${consentJwt !== null}, threadId=${threadId}`);
+		logger.info(`Sending consent response for toolCallId=${toolCallId}, threadId=${threadId}, hasJwt=${!!consentJwt}`);
 
-		const payload: any = {
+		const payload = {
 			message: "",
 			thread_id: threadId,
-			tool_call_approval: consentJwt
+			tool_call_approval: consentJwt !== null
 				? { consent_jwt: consentJwt }
 				: { consent_denied: true }
 		};
+
+		logger.info(`Consent payload:`, JSON.stringify(payload, null, 2));
 
 		const init = await this.buildInit({
 			method: 'POST',
@@ -153,6 +155,13 @@ export class RestChatService implements ChatService {
 			}
 
 			if (!res.ok) {
+				// Handle 401 - token expired, need to refresh session
+				if (res.status === 401) {
+					logger.info('Received 401 from Opey - token may have expired, requesting auth refresh');
+					this.streamEventCallback?.({ type: 'auth_refresh_needed' });
+					return;
+				}
+
 				let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
 
 				try {
@@ -335,7 +344,8 @@ export class RestChatService implements ChatService {
 					toolName: eventData.tool_name,
 					operationId: eventData.operation_id || null,
 					requiredRoles: eventData.required_roles || [],
-					toolCallCount: eventData.tool_call_count || 1,
+					timestamp: eventData.timestamp || Date.now() / 1000,
+					toolCallCount: eventData.tool_call_count ?? 1,
 					bankId: eventData.bank_id || null
 				});
 				break;

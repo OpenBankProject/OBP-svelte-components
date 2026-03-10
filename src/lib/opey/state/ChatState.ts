@@ -232,10 +232,10 @@ export class ChatState {
 		if (toolMessage) {
 			toolMessage.waitingForConsent = true;
 			toolMessage.consentStatus = 'pending';
-			toolMessage.consentOperationId = operationId ?? undefined;
+			toolMessage.consentOperationId = operationId || undefined;
 			toolMessage.consentRequiredRoles = requiredRoles;
 			toolMessage.consentToolCallCount = toolCallCount;
-			toolMessage.consentBankId = bankId;
+			if (bankId) toolMessage.consentBankId = bankId;
 		} else {
 			logger.warn(`No tool message found for consent request: ${toolCallId}, creating new one`);
 			this.addToolMessage({
