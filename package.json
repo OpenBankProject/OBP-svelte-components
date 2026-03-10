@@ -137,6 +137,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
 		"@types/markdown-it": "^14.1.2",
+		"@types/node": "^25.4.0",
 		"@types/prismjs": "^1.26.5",
 		"arctic": "^3.7.0",
 		"bits-ui": "^2.8.10",
