@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { ShieldUserIcon } from '@lucide/svelte';
-	import { Tooltip, Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
+	import { Tooltip, Dialog, Portal, Menu } from '@skeletonlabs/skeleton-svelte';
 	import { createLogger } from '$lib/utils/logger';
 
 	const logger = createLogger('OpeyChat');
 
+	import { env } from '$env/dynamic/public';
 	import { CookieAuthStrategy } from '$lib/opey/services/AuthStrategy';
 	import { ChatState, type ChatStateSnapshot } from '$lib/opey/state/ChatState';
 	import { RestChatService } from '$lib/opey/services/RestChatService';
@@ -19,7 +20,9 @@
 	// Import other components
 	import { ToolError, ObpApiResponse, DefaultToolResponse } from './tool-messages';
 	import ChatMessage from './ChatMessage.svelte';
-	import { CircleArrowUp, StopCircle, type Icon as IconType } from '@lucide/svelte';
+	import { CircleArrowUp, StopCircle, Copy, type Icon as IconType } from '@lucide/svelte';
+	import { chatToMarkdown } from '$lib/opey/utils/chatToMarkdown';
+	import { toast } from '$lib/utils/toastService';
 	import type { Snippet } from 'svelte';
 
 	// Interface for chat options
@@ -49,7 +52,7 @@
 	}
 	// Default chat options
 	const defaultChatOptions: OpeyChatOptions = {
-		baseUrl: 'http://localhost:5000',
+		baseUrl: env.PUBLIC_OPEY_BASE_URL || 'http://localhost:5000',
 		displayHeader: true,
 		currentlyActiveUserName: 'Guest',
 		displayConnectionPips: true,
@@ -89,7 +92,7 @@
 			if (response.ok) {
 				const data = await response.json();
 				const opeySnapshot = data.services['Opey II'];
-				
+
 				if (opeySnapshot) {
 					connectionStatus = opeySnapshot.status;
 				} else {
@@ -116,27 +119,31 @@
 	let userHasScrolledUp = $state(false);
 	let isAutoScrollEnabled = $state(true);
 
-	// Function to scroll to bottom
+	let isProgrammaticScroll = false;
+
 	function scrollToBottom() {
 		if (messagesContainer && isAutoScrollEnabled) {
+			isProgrammaticScroll = true;
 			messagesContainer.scrollTop = messagesContainer.scrollHeight;
 		}
 	}
 
-	// Detect if user has scrolled up manually
 	function handleScroll(event: Event) {
+		// Ignore scroll events fired by scrollToBottom() itself
+		if (isProgrammaticScroll) {
+			isProgrammaticScroll = false;
+			return;
+		}
+
 		if (!messagesContainer) return;
 
 		const element = event.target as HTMLElement;
-		const isAtBottom =
-			Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 10;
+		const isAtBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 10;
 
-		// If user scrolls to bottom, re-enable auto-scroll
 		if (isAtBottom) {
 			userHasScrolledUp = false;
 			isAutoScrollEnabled = true;
 		} else {
-			// User has scrolled up
 			userHasScrolledUp = true;
 			isAutoScrollEnabled = false;
 		}
@@ -192,11 +199,10 @@
 
 	// Watch for message changes and auto-scroll
 	$effect(() => {
-		// Trigger on messages change
+		// Trigger on messages change (tokens, tool cards, consent cards, new messages)
 		chat.messages;
 
-		// Only auto-scroll if enabled and streaming is happening
-		if (isAutoScrollEnabled && (isCurrentlyStreaming || chat.messages.some((m) => m.isLoading))) {
+		if (isAutoScrollEnabled) {
 			// Use requestAnimationFrame to ensure DOM has updated
 			requestAnimationFrame(() => {
 				scrollToBottom();
@@ -285,10 +291,6 @@
 
 	let authPipOpenState = $state(false);
 
-	// async function formatAuthStatusPip(session: SessionSnapshot, consentInfo?: OBPConsentInfo): {
-	// 	const
-	// }
-
 	async function sendMessage(text: string) {
 		if (!text.trim()) return;
 		await chatController.send(text);
@@ -296,7 +298,7 @@
 
 	function handleSendMessage(text: string) {
 		if (!text.trim()) return;
-		
+
 		// Prevent sending while streaming - user must explicitly stop first
 		if (isCurrentlyStreaming) return;
 
@@ -407,6 +409,14 @@
 		await chatController.denyToolCall(toolCallId);
 	}
 
+	async function handleConsent(toolCallId: string, consentJwt: string) {
+		await chatController.grantConsent(toolCallId, consentJwt);
+	}
+
+	async function handleConsentDeny(toolCallId: string) {
+		await chatController.denyConsent(toolCallId);
+	}
+
 	async function handleBatchApprovalSubmit(
 		decisions: Map<string, { approved: boolean; level: string }>
 	) {
@@ -419,6 +429,16 @@
 		isAutoScrollEnabled = true;
 		userHasScrolledUp = false;
 		await chatController.regenerate(messageId);
+	}
+
+	async function handleCopyChat() {
+		try {
+			const md = chatToMarkdown(chat.messages);
+			await navigator.clipboard.writeText(md);
+			toast.success('Chat copied to clipboard');
+		} catch {
+			toast.error('Failed to copy chat');
+		}
 	}
 
 	// TEMPORARY: Test function to manually trigger a single approval message
@@ -524,26 +544,45 @@
 {/snippet}
 
 {#snippet body()}
-	<article
-		bind:this={messagesContainer}
-		onscroll={handleScroll}
-		class="h-full overflow-y-auto p-4 {options.bodyClasses || ''}"
-	>
-		<div class="space-y-4">
-			{#each chat.messages as message, index (message.id)}
-				<ChatMessage
-					{message}
-					previousMessageRole={index > 0 ? chat.messages[index - 1].role : undefined}
-					userName={options.currentlyActiveUserName}
-					onApprove={handleApprove}
-					onDeny={handleDeny}
-					onBatchSubmit={handleBatchApprovalSubmit}
-					onRegenerate={handleRegenerate}
-					batchApprovalGroup={pendingApprovalTools.length > 1 ? pendingApprovalTools : undefined}
-				/>
-			{/each}
-		</div>
-	</article>
+	<Menu onSelect={(details) => { if (details.value === 'copy-chat') handleCopyChat(); }}>
+		<Menu.ContextTrigger
+			class="block h-full w-full"
+		>
+			<article
+				bind:this={messagesContainer}
+				onscroll={handleScroll}
+				class="h-full w-full overflow-y-auto overflow-x-hidden py-4 {options.bodyClasses || ''}"
+			>
+				<div class="space-y-4 min-w-0">
+					{#each chat.messages as message, index (message.id)}
+						<ChatMessage
+							{message}
+							previousMessageRole={index > 0 ? chat.messages[index - 1].role : undefined}
+							userName={options.currentlyActiveUserName}
+							onApprove={handleApprove}
+							onDeny={handleDeny}
+							onBatchSubmit={handleBatchApprovalSubmit}
+							onRegenerate={handleRegenerate}
+							batchApprovalGroup={pendingApprovalTools.length > 1 ? pendingApprovalTools : undefined}
+							onConsent={handleConsent}
+							onConsentDeny={handleConsentDeny}
+							allMessages={chat.messages}
+						/>
+					{/each}
+				</div>
+			</article>
+		</Menu.ContextTrigger>
+		<Portal>
+			<Menu.Positioner>
+				<Menu.Content class="card bg-surface-100-900 p-1 shadow-xl">
+					<Menu.Item value="copy-chat" disabled={chat.messages.length === 0}>
+						<Copy class="mr-2 h-4 w-4" />
+						<Menu.ItemText>Copy chat as markdown</Menu.ItemText>
+					</Menu.Item>
+				</Menu.Content>
+			</Menu.Positioner>
+		</Portal>
+	</Menu>
 {/snippet}
 
 {#snippet suggestedQuestions()}
@@ -584,12 +623,12 @@
 					</Tooltip.Positioner>
 				</Portal>
 			</Tooltip>
-			
+
 			<!-- Authentication/Consent Pip with Tooltip -->
 			<Tooltip>
 				<Tooltip.Trigger>
-					<a 
-						href="/user#opey-consent" 
+					<a
+						href="/user#opey-consent"
 						class="h-2 w-2 rounded-full {authPipColor} cursor-pointer transition-all hover:scale-125 block"
 						aria-label="View Opey consent"
 					></a>
@@ -644,7 +683,7 @@
 						<Dialog.Description class="text-sm opacity-75">
 							Here's a behind-the-scenes look at how Opey works!
 						</Dialog.Description>
-						
+
 						<div class="flex min-h-64 items-center justify-center">
 							{#if isLoadingDiagram}
 								<div class="flex flex-col items-center gap-4">
@@ -657,9 +696,9 @@
 									<p class="text-sm opacity-75">{diagramError}</p>
 								</div>
 							{:else if diagramUrl}
-								<img 
-									src={diagramUrl} 
-									alt="Opey System Architecture Diagram" 
+								<img
+									src={diagramUrl}
+									alt="Opey System Architecture Diagram"
 									class="h-auto w-full rounded-container"
 								/>
 							{/if}
@@ -676,7 +715,7 @@
 			bind:value={messageInput}
 			placeholder={!userAuthenticated
 				? 'Please log in to ask me anything...'
-				: chat.messages.length > 0
+				: chat.messages.length === 0
 					? 'Ask me about the Open Bank Project API'
 					: 'Ask me anything...'}
 			class="w-full resize-none border-none bg-transparent p-0.5 outline-none shadow-none focus:outline-none focus:shadow-none focus:ring-0 focus-visible:outline-none max-h-40 overflow-y-auto"
@@ -691,8 +730,6 @@
 		<div class="flex w-full items-end justify-between pt-1">
 			<div class="flex items-end gap-2">
                 {@render statusPips(session, options.currentConsentInfo)}
-                <!-- Placeholder for future buttons (like file upload) -->
-                <!-- <button class="btn variant-ghost-primary btn-sm">Add File +</button> -->
             </div>
 
 			<div class="flex justify-end items-end">
@@ -738,13 +775,13 @@
 			</div>
 		{:else}
 			<!--Main Chat Layout: messages fill space, input at bottom-->
-			<div class="flex-1 overflow-hidden">
+			<div class="relative min-h-0 min-w-0 flex-1 overflow-hidden px-4">
 				{@render body()}
 			</div>
 
 			{@render suggestedQuestions()}
 
-			<div class="flex-shrink-0 p-4 {options.footerClasses || ''}">
+			<div class="flex-shrink-0 px-4 pb-2 {options.footerClasses || ''}">
 				<div class="relative flex items-center justify-center">
 					{@render inputField()}
 				</div>

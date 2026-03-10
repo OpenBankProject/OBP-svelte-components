@@ -216,6 +216,74 @@ export class ChatState {
 		) as ToolMessage[];
 	}
 
+	/**
+	 * Add or update a tool message to indicate it's waiting for consent.
+	 */
+	addConsentRequest(
+		toolCallId: string,
+		toolName: string,
+		operationId: string | null,
+		requiredRoles: string[],
+		toolCallCount: number,
+		bankId?: string
+	): void {
+		const toolMessage = this.getToolMessageByCallId(toolCallId);
+
+		if (toolMessage) {
+			toolMessage.waitingForConsent = true;
+			toolMessage.consentStatus = 'pending';
+			toolMessage.consentOperationId = operationId ?? undefined;
+			toolMessage.consentRequiredRoles = requiredRoles;
+			toolMessage.consentToolCallCount = toolCallCount;
+			toolMessage.consentBankId = bankId;
+		} else {
+			logger.warn(`No tool message found for consent request: ${toolCallId}, creating new one`);
+			this.addToolMessage({
+				id: toolCallId,
+				role: 'tool',
+				message: '',
+				timestamp: new Date(),
+				toolCallId: toolCallId,
+				toolName: toolName,
+				toolInput: {},
+				isStreaming: false,
+				waitingForConsent: true,
+				consentStatus: 'pending',
+				consentOperationId: operationId ?? undefined,
+				consentRequiredRoles: requiredRoles,
+				consentToolCallCount: toolCallCount,
+				consentBankId: bankId
+			} as ToolMessage);
+		}
+
+		this.messages = [...this.messages];
+		this.emit();
+	}
+
+	/**
+	 * Update consent request status.
+	 */
+	updateConsentRequest(toolCallId: string, granted: boolean): void {
+		const toolMessage = this.getToolMessageByCallId(toolCallId);
+
+		if (toolMessage) {
+			toolMessage.consentStatus = granted ? 'granted' : 'denied';
+			toolMessage.waitingForConsent = false;
+		}
+
+		this.messages = [...this.messages];
+		this.emit();
+	}
+
+	/**
+	 * Get all tool messages that are currently waiting for consent.
+	 */
+	getPendingConsentRequests(): ToolMessage[] {
+		return this.messages.filter(
+			msg => msg.role === 'tool' && (msg as ToolMessage).waitingForConsent
+		) as ToolMessage[];
+	}
+
 	// Update to set approval status and force update
 	updateApprovalRequest(toolCallId: string, approved: boolean): void {
 		// Update the tool message with approval status

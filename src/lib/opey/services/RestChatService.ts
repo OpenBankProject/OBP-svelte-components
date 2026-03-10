@@ -68,6 +68,30 @@ export class RestChatService implements ChatService {
 		return this.handleStreamingResponse(`${this.baseUrl}/stream`, init);
 	}
 
+	async sendConsentResponse(
+		toolCallId: string,
+		consentJwt: string | null,
+		threadId: string
+	): Promise<void> {
+		logger.info(`Sending consent response for toolCallId=${toolCallId}, granted=${consentJwt !== null}, threadId=${threadId}`);
+
+		const payload: any = {
+			message: "",
+			thread_id: threadId,
+			tool_call_approval: consentJwt
+				? { consent_jwt: consentJwt }
+				: { consent_denied: true }
+		};
+
+		const init = await this.buildInit({
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(payload)
+		});
+
+		return this.handleStreamingResponse(`${this.baseUrl}/stream`, init);
+	}
+
 	async regenerate(messageId: string, threadId: string): Promise<void> {
 		logger.info(`Regenerating response from messageId=${messageId}, threadId=${threadId}`);
 		
@@ -302,6 +326,17 @@ export class RestChatService implements ChatService {
 						method: tc.method
 					})),
 					options: eventData.options || []
+				});
+				break;
+			case 'consent_request':
+				this.streamEventCallback?.({
+					type: 'consent_request',
+					toolCallId: eventData.tool_call_id,
+					toolName: eventData.tool_name,
+					operationId: eventData.operation_id || null,
+					requiredRoles: eventData.required_roles || [],
+					toolCallCount: eventData.tool_call_count || 1,
+					bankId: eventData.bank_id || null
 				});
 				break;
 			default:
