@@ -1,6 +1,6 @@
 {
 	"name": "obp-svelte-components",
-	"version": "0.2.1",
+	"version": "1.0.0",
 	"description": "A reusable component library for the Open Bank Project",
 	"author": {
 		"name": "Open Bank Project",
