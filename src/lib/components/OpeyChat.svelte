@@ -6,13 +6,13 @@
 
 	const logger = createLogger('OpeyChat');
 
-	import { env } from '$env/dynamic/public';
 	import { CookieAuthStrategy } from '$lib/opey/services/AuthStrategy';
 	import { ChatState, type ChatStateSnapshot } from '$lib/opey/state/ChatState';
 	import { RestChatService } from '$lib/opey/services/RestChatService';
 	import { ChatController } from '$lib/opey/controllers/ChatController';
 	import { SessionState, type SessionSnapshot } from '$lib/opey/state/SessionState';
-	import { ConsentSessionService } from '$lib/opey/services/ConsentSessionService';
+	import { OpeySessionService } from '$lib/opey/services/OpeySessionService';
+	import { SessionController } from '$lib/opey/controllers/SessionController';
 	import type { ToolMessage } from '$lib/opey/types';
 	import type { OBPConsentInfo } from '$lib/obp/types';
 	import { healthCheckRegistry } from '$lib/health-check/HealthCheckRegistry';
@@ -52,7 +52,7 @@
 	}
 	// Default chat options
 	const defaultChatOptions: OpeyChatOptions = {
-		baseUrl: env.PUBLIC_OPEY_BASE_URL || 'http://localhost:5000',
+		baseUrl: 'http://localhost:5000',
 		displayHeader: true,
 		currentlyActiveUserName: 'Guest',
 		displayConnectionPips: true,
@@ -66,7 +66,8 @@
 	// Initialize session state and services
 
 	const sessionState = new SessionState();
-	const sessionService = new ConsentSessionService(options.baseUrl);
+	const sessionService = new OpeySessionService('/api/opey/auth');
+	const sessionController = new SessionController(sessionService, sessionState);
 
 	const chatState = new ChatState();
 	const chatService = new RestChatService(options.baseUrl, new CookieAuthStrategy());
@@ -326,32 +327,7 @@
 	}
 
 	async function initializeOpeySession() {
-		try {
-			sessionState.setStatus('loading');
-
-			const response = await fetch('/api/opey/auth', {
-				method: 'POST',
-				credentials: 'include'
-			});
-
-			const data = await response.json();
-
-			if (!response.ok) {
-				throw new Error(data.error || 'Failed to initialize session');
-			}
-
-			logger.debug('Opey session initialized:', data);
-			if (data.error) {
-				logger.warn('Opey session initialization warning:', data.error);
-			}
-
-			// Update session state based on response
-			sessionState.setAuth(data.authenticated);
-			sessionState.setStatus('ready');
-		} catch (error: any) {
-			logger.error('Failed to initialize Opey session:', error);
-			sessionState.setStatus('error', error.message);
-		}
+		await sessionController.init();
 	}
 
 	// Add retry logic with exponential backoff

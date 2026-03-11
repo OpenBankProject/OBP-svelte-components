@@ -1,7 +1,5 @@
 export interface SessionService {
-    createSession(consentJwt?: string): Promise<void>;
-
-    deleteSession(): Promise<void>;
-
-    getStatus(): Promise<{status: string}>;
+	createSession(): Promise<{ authenticated: boolean }>;
+	deleteSession(): Promise<void>;
+	getStatus(): Promise<{ status: string }>;
 }

@@ -86,6 +86,10 @@
 		"./server/obp": {
 			"types": "./dist/server/obp/index.d.ts",
 			"default": "./dist/server/obp/index.js"
+		},
+		"./server/opey": {
+			"types": "./dist/server/opey/index.d.ts",
+			"default": "./dist/server/opey/index.js"
 		}
 	},
 	"peerDependencies": {

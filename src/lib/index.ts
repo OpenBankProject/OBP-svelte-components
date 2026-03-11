@@ -18,7 +18,7 @@ export { OBPRequests, createOBPRequests } from './obp/index.js';
 export { OBPErrorBase, OBPRequestError, OBPRateLimitError, OBPTimeoutError } from './obp/index.js';
 
 // Opey
-export { ChatController, SessionController, ChatState, SessionState, RestChatService, ConsentSessionService, CookieAuthStrategy } from './opey/index.js';
+export { ChatController, SessionController, ChatState, SessionState, RestChatService, OpeySessionService, CookieAuthStrategy } from './opey/index.js';
 
 // Utils
 export { createLogger, toaster, toast, getLegalMarkdownFromWebUIProps, extractUsernameFromJWT } from './utils/index.js';

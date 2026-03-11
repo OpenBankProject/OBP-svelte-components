@@ -8,7 +8,7 @@ export type { ToolCallApprover } from './controllers/ToolCallController.js';
 export { CookieAuthStrategy } from './services/AuthStrategy.js';
 export type { AuthStrategy } from './services/AuthStrategy.js';
 export type { ChatService, StreamEvent } from './services/ChatService.js';
-export { ConsentSessionService } from './services/ConsentSessionService.js';
+export { OpeySessionService } from './services/OpeySessionService.js';
 export { RestChatService } from './services/RestChatService.js';
 export type { SessionService } from './services/SessionService.js';
 
