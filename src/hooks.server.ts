@@ -60,7 +60,7 @@ const oauth2ProviderManager = new OAuth2ProviderManager(oauth2ProviderFactory, o
 const sessionOAuthHelper = new SessionOAuthHelper(oauth2ProviderFactory);
 
 // Export singletons for use in route handlers
-export { oauth2ProviderFactory, oauth2ProviderManager, sessionOAuthHelper };
+export { oauth2ProviderFactory, oauth2ProviderManager, sessionOAuthHelper, obpRequests, healthCheckRegistry };
 
 const healthCheckRegistry = new HealthCheckRegistry();
 

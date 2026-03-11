@@ -98,14 +98,20 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
 	const [actualState, provider] = storedState.split(':');
 	logger.debug('Received state:', recievedState);
-	if (!provider || provider !== urlProvider) {
-		logger.error('Provider mismatch or not found in state:', { stored: provider, url: urlProvider });
+	if (!provider) {
+		logger.error('Provider not found in state');
 		return new Response(null, {
 			status: 302,
 			headers: {
 				Location: `/login?error=${encodeURIComponent('Invalid authentication state. Please try again.')}`
 			}
 		});
+	}
+
+	// The URL provider (e.g. "obp") may differ from the state provider (e.g. "obp-oidc")
+	// when the callback URL uses a shorthand. The state is the authoritative source.
+	if (provider !== urlProvider) {
+		logger.debug(`URL provider "${urlProvider}" differs from state provider "${provider}" - using state provider`);
 	}
 
 	const oauthClient = oauth2ProviderFactory.getClient(provider);
