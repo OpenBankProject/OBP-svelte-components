@@ -18,6 +18,10 @@ export type { ChatStateSnapshot } from './state/ChatState.js';
 export { SessionState } from './state/SessionState.js';
 export type { SessionSnapshot } from './state/SessionState.js';
 
+// Utils
+export { expandRoleRequirements, pickConsentRole, deduplicateRoles } from './utils/roles.js';
+export { chatToMarkdown, messageToMarkdown } from './utils/chatToMarkdown.js';
+
 // Types
 export type {
 	Role,
