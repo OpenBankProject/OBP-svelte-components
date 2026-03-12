@@ -97,6 +97,8 @@
 		"@skeletonlabs/skeleton": "^4.0.0",
 		"@skeletonlabs/skeleton-svelte": "^4.0.0",
 		"bits-ui": "^2.8.10",
+		"markdown-it": "^14.1.0",
+		"prismjs": "^1.30.0",
 		"svelte": "^5.0.0"
 	},
 	"peerDependenciesMeta": {
@@ -110,6 +112,12 @@
 			"optional": false
 		},
 		"@lucide/svelte": {
+			"optional": false
+		},
+		"markdown-it": {
+			"optional": false
+		},
+		"prismjs": {
 			"optional": false
 		},
 		"arctic": {
@@ -143,6 +151,8 @@
 		"@types/markdown-it": "^14.1.2",
 		"@types/node": "^25.4.0",
 		"@types/prismjs": "^1.26.5",
+		"markdown-it": "^14.1.0",
+		"prismjs": "^1.30.0",
 		"arctic": "^3.7.0",
 		"bits-ui": "^2.8.10",
 		"dotenv": "^17.2.1",
@@ -162,9 +172,7 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
-		"jwt-decode": "^4.0.0",
-		"markdown-it": "^14.1.0",
-		"prismjs": "^1.30.0"
+		"jwt-decode": "^4.0.0"
 	},
 	"keywords": [
 		"svelte",
