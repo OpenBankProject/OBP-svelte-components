@@ -159,10 +159,10 @@
 	<div
 		class="h-full bg-conic-250 from-30% via-40% to-50% dark:from-primary-950 dark:via-secondary-500/70 dark:to-primary-950"
 	>
-		<div class="flex flex-col backdrop-blur-2xl" style="height: calc(100vh - 80px);">
+		<div class="flex flex-col backdrop-blur-2xl" style="height: calc(100vh - 48px);">
 			<PageHeader {isAuthenticated} username={data.username} />
 
-			<main class="flex flex-col overflow-auto" style="height: calc(100vh - 80px);">
+			<main class="flex flex-col overflow-auto" style="height: calc(100vh - 48px);">
 				{@render children()}
 			</main>
 		</div>
