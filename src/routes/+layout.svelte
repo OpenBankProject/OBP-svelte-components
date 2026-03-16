@@ -16,8 +16,23 @@
 		ShoppingBag,
 		Landmark,
 		DatabaseZap,
-		CreditCard
+		CreditCard,
+		Server,
+		Radio,
+		BarChart3,
+		ShieldCheck,
+		Settings,
+		Globe,
+		FileCode,
+		Database,
+		Users,
+		Bell,
+		Workflow,
+		MonitorCheck,
+		Lock,
+		Layers
 	} from '@lucide/svelte';
+	import type { NavigationSection } from '$lib/config/navigation';
 
 	import { env } from '$env/dynamic/public';
 	let { data, children } = $props();
@@ -34,7 +49,7 @@
 		env.PUBLIC_UNDOCUMENTED_FEATURE_1_ENABLED === 'TRUE' ||
 		env.PUBLIC_UNDOCUMENTED_FEATURE_1_ENABLED === 'True'
 	);
-	let isAuthenticated = $state(!!data.email);
+	let isAuthenticated = $state(!!data.userId);
 	let displayMode: 'dark' | 'light' = $state('dark');
 
 	// Some items in the menu are rendered conditionally based on the presence of URLs set in the environment variables.
@@ -97,6 +112,86 @@
 			: [])
 	]);
 
+	const sections: NavigationSection[] = [
+		{
+			id: 'system',
+			label: 'System',
+			iconComponent: Server,
+			basePaths: ['/system'],
+			items: [
+				{ href: '/system/banks', label: 'Banks', iconComponent: Landmark },
+				{ href: '/system/hosts', label: 'API Hosts', iconComponent: Globe },
+				{ href: '/system/configuration', label: 'Configuration', iconComponent: Settings }
+			]
+		},
+		{
+			id: 'signals',
+			label: 'Signals',
+			iconComponent: Radio,
+			basePaths: ['/signals'],
+			items: [
+				{ href: '/signals/webhooks', label: 'Webhooks', iconComponent: Workflow },
+				{ href: '/signals/alerts', label: 'Alerts', iconComponent: Bell },
+				{ href: '/signals/notifications', label: 'Notifications', iconComponent: MonitorCheck }
+			]
+		},
+		{
+			id: 'metrics',
+			label: 'Metrics',
+			iconComponent: BarChart3,
+			basePaths: ['/metrics'],
+			items: [
+				{ href: '/metrics/api-calls', label: 'API Calls', iconComponent: BarChart3 },
+				{ href: '/metrics/performance', label: 'Performance', iconComponent: MonitorCheck },
+				{ href: '/metrics/usage', label: 'Usage Reports', iconComponent: FileCode }
+			]
+		},
+		{
+			id: 'rbac',
+			label: 'RBAC',
+			iconComponent: ShieldCheck,
+			basePaths: ['/rbac'],
+			items: [
+				{ href: '/rbac/roles', label: 'Roles', iconComponent: Lock },
+				{ href: '/rbac/permissions', label: 'Permissions', iconComponent: ShieldCheck },
+				{ href: '/rbac/users', label: 'Users', iconComponent: Users }
+			]
+		},
+		{
+			id: 'dynamic-entities',
+			label: 'Dynamic Entities',
+			iconComponent: Database,
+			basePaths: ['/dynamic-entities'],
+			items: [
+				{ href: '/dynamic-entities/system?level=system', label: 'System Entities', iconComponent: Server },
+				{ href: '/dynamic-entities/bank?level=bank', label: 'Bank Entities', iconComponent: Landmark },
+				{ href: '/dynamic-entities/manage', label: 'Manage', iconComponent: Settings }
+			]
+		},
+		{
+			id: 'connectors',
+			label: 'Connectors',
+			iconComponent: Workflow,
+			basePaths: ['/connectors'],
+			items: [
+				{ href: '/connectors/list', label: 'All Connectors', iconComponent: Layers },
+				{ href: '/connectors/methods', label: 'Methods', iconComponent: FileCode },
+				{ href: '/connectors/config', label: 'Configuration', iconComponent: Settings }
+			]
+		},
+		{
+			id: 'api-config',
+			label: 'API Configuration',
+			iconComponent: Settings,
+			basePaths: ['/api-config'],
+			items: [
+				{ href: '/api-config/endpoints', label: 'Endpoints', iconComponent: Globe },
+				{ href: '/api-config/collections', label: 'Collections', iconComponent: Layers },
+				{ href: '/api-config/versioning', label: 'Versioning', iconComponent: FileCode }
+			]
+		}
+	];
+
 	let footerLinks = $state([
 		{
 			href: 'https://github.com/OpenBankProject',
@@ -141,10 +236,12 @@
 	<NavigationSidebar
 		{menuItems}
 		{myAccountItems}
+		{sections}
 		{logoUrl}
 		{logoWidth}
 		{isAuthenticated}
 		currentPathname={page.url.pathname}
+		currentSearch={page.url.search}
 		bind:displayMode
 		{footerLinks}
 		copyrightHolder="TESOBE"

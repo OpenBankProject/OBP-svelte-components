@@ -196,7 +196,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 	);
 	logger.debug('Full current user data:', user);
 
-	if (user.user_id && user.email) {
+	if (user.user_id) {
 		const { session } = event.locals;
 		await session.setData({
 			user: user,
@@ -215,7 +215,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 			}
 		});
 	} else {
-		logger.error('Invalid user data received from OBP - missing user_id or email:', user);
+		logger.error('Invalid user data received from OBP - missing user_id:', user);
 
 		event.cookies.delete('obp_oauth_state', { path: '/' });
 
