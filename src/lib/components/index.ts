@@ -6,4 +6,5 @@ export { default as LegalDocumentModal } from './LegalDocumentModal.svelte';
 export { default as LightSwitch } from './LightSwitch.svelte';
 export { default as Toast } from './Toast.svelte';
 export { default as ToolApprovalCard } from './ToolApprovalCard.svelte';
+export { default as NavigationSidebar } from './NavigationSidebar.svelte';
 export { ToolMessage, ToolError, ObpApiResponse, DefaultToolResponse } from './tool-messages/index.js';

@@ -5,6 +5,7 @@ export {
 	ConsentCard,
 	LegalDocumentModal,
 	LightSwitch,
+	NavigationSidebar,
 	Toast,
 	ToolApprovalCard,
 	ToolMessage,
