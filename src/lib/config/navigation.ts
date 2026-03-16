@@ -8,6 +8,14 @@ export interface NavigationItem {
     description?: string;
 }
 
+export interface NavigationSection {
+    id: string;
+    label: string;
+    iconComponent: any;
+    items: NavigationItem[];
+    basePaths: string[];
+}
+
 export interface NavigationConfig {
     subscriptionsUrl?: string;
 }

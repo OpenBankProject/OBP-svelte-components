@@ -6,7 +6,7 @@
 		ChevronDown
 	} from '@lucide/svelte';
 	import LightSwitch from '$lib/components/LightSwitch.svelte';
-	import type { NavigationItem } from '$lib/config/navigation';
+	import type { NavigationItem, NavigationSection } from '$lib/config/navigation';
 
 	interface FooterLink {
 		href: string;
@@ -32,6 +32,9 @@
 		sponsorNote?: string;
 		legacyPortalUrl?: string;
 		hideFooterExtras?: boolean;
+		sections?: NavigationSection[];
+		currentSearch?: string;
+		getTooltip?: (href: string, label: string) => string;
 	}
 
 	let {
@@ -50,13 +53,32 @@
 		sponsorInfoUrl,
 		sponsorNote,
 		legacyPortalUrl,
-		hideFooterExtras = false
+		hideFooterExtras = false,
+		sections = [],
+		currentSearch = '',
+		getTooltip
 	}: NavigationSidebarProps = $props();
 
 	let isNavExpanded = $state(true);
 	let isMyAccountExpanded = $state(false);
+	let expandedSections = $state<Record<string, boolean>>({});
 
 	let isMyAccountActive = $derived(currentPathname.startsWith('/user'));
+
+	function isSectionActive(section: NavigationSection): boolean {
+		return section.basePaths.some(
+			(bp) => currentPathname === bp || currentPathname.startsWith(bp + '/')
+		);
+	}
+
+	function isSubItemActive(href: string): boolean {
+		const fullPath = currentPathname + (currentSearch ? currentSearch : '');
+		return fullPath === href || currentPathname === href;
+	}
+
+	function tooltip(href: string, label: string): string {
+		return getTooltip ? getTooltip(href, label) : label;
+	}
 
 	$effect(() => {
 		if (isMyAccountActive) {
@@ -64,8 +86,20 @@
 		}
 	});
 
+	$effect(() => {
+		for (const section of sections) {
+			if (isSectionActive(section)) {
+				expandedSections[section.id] = true;
+			}
+		}
+	});
+
 	function toggleMyAccount() {
 		isMyAccountExpanded = !isMyAccountExpanded;
+	}
+
+	function toggleSection(id: string) {
+		expandedSections[id] = !expandedSections[id];
 	}
 
 	function toggleNav() {
@@ -118,7 +152,7 @@
 		<div class="flex-1 overflow-y-auto overflow-x-hidden">
 			<!-- Main Menu -->
 			<ul class="flex flex-col gap-2 px-3">
-				{#each menuItems as item}
+				{#each menuItems as item (item.href)}
 					{@const Icon = item.iconComponent}
 					<li>
 						<a
@@ -127,7 +161,7 @@
 							class:preset-filled-primary-50-950={currentPathname === item.href}
 							class:border={currentPathname === item.href}
 							class:border-solid-secondary-500={currentPathname === item.href}
-							title={item.label}
+							title={tooltip(item.href, item.label)}
 							aria-label={item.label}
 							target={item.external ? '_blank' : undefined}
 							rel={item.external ? 'noopener noreferrer' : undefined}
@@ -164,7 +198,7 @@
 
 						{#if isMyAccountExpanded}
 							<ul class="mt-1 ml-4 flex flex-col gap-1">
-								{#each myAccountItems as subItem}
+								{#each myAccountItems as subItem (subItem.href)}
 									{@const Icon = subItem.iconComponent}
 									<li>
 										<a
@@ -173,7 +207,7 @@
 											class:preset-filled-secondary-50-950={currentPathname === subItem.href}
 											class:border-l-2={currentPathname === subItem.href}
 											class:border-primary-500={currentPathname === subItem.href}
-											title={subItem.label}
+											title={tooltip(subItem.href, subItem.label)}
 											aria-label={subItem.label}
 											target={subItem.external ? '_blank' : undefined}
 											rel={subItem.external ? 'noopener noreferrer' : undefined}
@@ -197,6 +231,65 @@
 						</a>
 					{/if}
 				</div>
+
+				<!-- Expandable Sections -->
+				{#each sections as section (section.id)}
+					{@const SectionIcon = section.iconComponent}
+					<div class="mt-2 px-3">
+						{#if isNavExpanded}
+							<button
+								type="button"
+								class="hover:bg-surface-100-800 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors"
+								class:bg-primary-100-800={isSectionActive(section)}
+								onclick={() => toggleSection(section.id)}
+							>
+								<div class="flex items-center gap-3 whitespace-nowrap overflow-hidden">
+									<SectionIcon class="h-5 w-5 shrink-0" />
+									<span>{section.label}</span>
+								</div>
+								{#if expandedSections[section.id]}
+									<ChevronDown class="h-4 w-4 shrink-0" />
+								{:else}
+									<ChevronRight class="h-4 w-4 shrink-0" />
+								{/if}
+							</button>
+
+							{#if expandedSections[section.id]}
+								<ul class="mt-1 ml-4 flex flex-col gap-1">
+									{#each section.items as subItem (subItem.href)}
+										{@const SubIcon = subItem.iconComponent}
+										<li>
+											<a
+												href={subItem.href}
+												class="btn w-full justify-start gap-3 px-2 pl-6 text-sm whitespace-nowrap overflow-hidden hover:preset-tonal"
+												class:preset-filled-secondary-50-950={isSubItemActive(subItem.href)}
+												class:border-l-2={isSubItemActive(subItem.href)}
+												class:border-primary-500={isSubItemActive(subItem.href)}
+												title={tooltip(subItem.href, subItem.label)}
+												aria-label={subItem.label}
+												target={subItem.external ? '_blank' : undefined}
+												rel={subItem.external ? 'noopener noreferrer' : undefined}
+											>
+												<SubIcon class="size-4 shrink-0" />
+												<span>{subItem.label}</span>
+											</a>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						{:else}
+							<a
+								href={section.basePaths[0]}
+								class="btn w-full justify-start gap-3 px-3 py-2 hover:preset-tonal"
+								class:preset-filled-primary-50-950={isSectionActive(section)}
+								title={tooltip(section.basePaths[0], section.label)}
+								aria-label={section.label}
+							>
+								<SectionIcon class="size-5" />
+							</a>
+						{/if}
+					</div>
+				{/each}
 			{/if}
 		</div>
 
@@ -211,7 +304,7 @@
 			{:else if isNavExpanded}
 				<div class="flex flex-wrap items-center gap-3 text-xs text-surface-800-200">
 					<LightSwitch bind:mode={displayMode} />
-					{#each footerLinks as link}
+					{#each footerLinks as link (link.href)}
 						<a href={link.href} class="flex items-center gap-2 hover:text-tertiary-400">
 							{#if link.iconLight && link.iconDark}
 								<img

@@ -34,3 +34,4 @@ export { renderMarkdown } from './markdown/index.js';
 
 // Config
 export { buildMyAccountItems, getActiveMenuItem } from './config/index.js';
+export type { NavigationSection } from './config/index.js';
