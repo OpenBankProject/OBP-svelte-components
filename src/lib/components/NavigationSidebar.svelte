@@ -107,7 +107,7 @@
 	}
 </script>
 
-<div class="relative h-screen max-h-full overflow-hidden">
+<div class="relative h-full overflow-hidden">
 	{#if isNavExpanded}
 		<button
 			type="button"
@@ -121,7 +121,7 @@
 	{/if}
 
 	<nav
-		class="flex h-full min-h-0 flex-col gap-4 overflow-hidden preset-filled-primary-50-950
+		class="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-primary-50 dark:bg-primary-950
 		       transition-[width] duration-200 ease-[cubic-bezier(0.165,0.85,0.45,1)]"
 		style="width: {isNavExpanded ? '256px' : '64px'}"
 	>
@@ -149,7 +149,7 @@
 		</header>
 
 		<!-- Content -->
-		<div class="flex-1 overflow-y-auto overflow-x-hidden">
+		<div class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
 			<!-- Main Menu -->
 			<ul class="flex flex-col gap-2 px-3">
 				{#each menuItems as item (item.href)}
