@@ -3,7 +3,7 @@
 	import { renderMarkdown } from '$lib/markdown/helper-funcs';
 	import type { BaseMessage, ToolMessage as ToolMessageType } from '$lib/opey/types';
 	import { ToolMessage } from './tool-messages';
-	import { RotateCw, Copy } from '@lucide/svelte';
+	import { RotateCw, Copy, AlertTriangle } from '@lucide/svelte';
 	import { messageToMarkdown } from '$lib/opey/utils/chatToMarkdown';
 	import { toast } from '$lib/utils/toastService';
 
@@ -17,6 +17,7 @@
 		batchApprovalGroup?: ToolMessageType[];
 		userName?: string;
 		onRegenerate?: (messageId: string) => Promise<void>;
+		onRetry?: () => Promise<void>;
 		onConsent?: (toolCallId: string, consentJwt: string) => Promise<void>;
 		onConsentDeny?: (toolCallId: string) => Promise<void>;
 		allMessages?: BaseMessage[];
@@ -31,6 +32,7 @@
 		batchApprovalGroup,
 		userName = 'Guest',
 		onRegenerate,
+		onRetry,
 		onConsent,
 		onConsentDeny,
 		allMessages = []
@@ -196,10 +198,27 @@
 				{onConsentDeny}
 			/>
 		{:else if message.role === 'error'}
-			<div class="max-w-full p-2">
-				<p class="text-sm text-error-500 dark:text-error-400">
-					{getErrorMessage(message.error || message.message)}
-				</p>
+			<div class="max-w-full rounded-lg border border-error-300 bg-error-50 p-4 dark:border-error-700 dark:bg-error-950/30">
+				<div class="flex items-start gap-3">
+					<AlertTriangle class="mt-0.5 h-5 w-5 flex-shrink-0 text-error-500" />
+					<div class="flex-1">
+						<p class="text-sm font-medium text-error-700 dark:text-error-300">
+							Something went wrong
+						</p>
+						<p class="mt-1 text-sm text-error-600 dark:text-error-400">
+							{getErrorMessage(message.error || message.message)}
+						</p>
+						{#if onRetry}
+							<button
+								onclick={() => onRetry?.()}
+								class="mt-3 inline-flex items-center gap-1.5 rounded-md bg-error-100 px-3 py-1.5 text-sm font-medium text-error-700 transition-colors hover:bg-error-200 dark:bg-error-900/50 dark:text-error-300 dark:hover:bg-error-900/80"
+							>
+								<RotateCw class="h-3.5 w-3.5" />
+								Retry
+							</button>
+						{/if}
+					</div>
+				</div>
 			</div>
 		{/if}
 	</div>

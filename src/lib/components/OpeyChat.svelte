@@ -407,6 +407,17 @@
 		await chatController.regenerate(messageId);
 	}
 
+	async function handleRetry() {
+		logger.debug('Retrying last message');
+		// Find the last user message to regenerate from
+		const lastUserMessage = [...chat.messages].reverse().find((m) => m.role === 'user');
+		if (lastUserMessage && !lastUserMessage.isPending && !lastUserMessage.id.startsWith('temp-')) {
+			isAutoScrollEnabled = true;
+			userHasScrolledUp = false;
+			await chatController.regenerate(lastUserMessage.id);
+		}
+	}
+
 	async function handleCopyChat() {
 		try {
 			const md = chatToMarkdown(chat.messages);
@@ -539,6 +550,7 @@
 							onDeny={handleDeny}
 							onBatchSubmit={handleBatchApprovalSubmit}
 							onRegenerate={handleRegenerate}
+							onRetry={handleRetry}
 							batchApprovalGroup={pendingApprovalTools.length > 1 ? pendingApprovalTools : undefined}
 							onConsent={handleConsent}
 							onConsentDeny={handleConsentDeny}

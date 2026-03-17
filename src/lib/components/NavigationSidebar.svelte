@@ -121,7 +121,7 @@
 	{/if}
 
 	<nav
-		class="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-primary-50 dark:bg-surface-900
+		class="flex h-full min-h-0 flex-col gap-4 overflow-hidden preset-filled-primary-50-950
 		       transition-[width] duration-200 ease-[cubic-bezier(0.165,0.85,0.45,1)]"
 		style="width: {isNavExpanded ? '256px' : '64px'}"
 	>

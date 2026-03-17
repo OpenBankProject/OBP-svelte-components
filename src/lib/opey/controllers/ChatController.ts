@@ -104,6 +104,9 @@ export class ChatController {
 						);
 						break;
 					case 'error':
+						// Always remove loading messages when an error occurs
+						state.removeLoadingMessages();
+
 						if (event.messageId) {
 							// Check if this is a tool message - if so, skip updating since tool errors
 							// are already handled by the tool_complete event with status: 'error'
